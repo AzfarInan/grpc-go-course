@@ -14,5 +14,4 @@ func (s *Server) Greet(ctx context.Context, req *pb.GreetRequest) (*pb.GreetResp
 	return &pb.GreetResponse{
 		Result: "Hello " + req.FirstName,
 	}, nil
-
 }
