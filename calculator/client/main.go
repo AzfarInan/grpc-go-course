@@ -21,4 +21,7 @@ func main() {
 
 	c := pb.NewCalculatorClient(conn)
 	doSum(c)
+	doSubtract(c)
+	doMultiply(c)
+	doDivide(c)
 }
