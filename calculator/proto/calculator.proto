@@ -17,10 +17,15 @@ message CalculatorResponse {
   int32 result = 1;
 }
 
+message AverageResponse {
+  float average = 1;
+}
+
 service Calculator {
   rpc Add(CalculatorRequest) returns (CalculatorResponse);
   rpc Subtract(CalculatorRequest) returns (CalculatorResponse);
   rpc Multiply(CalculatorRequest) returns (CalculatorResponse);
   rpc Divide(CalculatorRequest) returns (CalculatorResponse);
   rpc Prime(PrimeRequest) returns (stream CalculatorResponse);
+  rpc Average(stream PrimeRequest) returns (AverageResponse);
 }

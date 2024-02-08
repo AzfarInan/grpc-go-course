@@ -25,4 +25,5 @@ func main() {
 	doMultiply(c)
 	doDivide(c)
 	doPrime(c)
+	doAverage(c)
 }

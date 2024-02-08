@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"time"
 
 	pb "github.com/AzfarInan/grpc-go-course/calculator/proto"
 )
@@ -104,4 +105,37 @@ func doPrime(c pb.CalculatorClient) {
 
 		log.Printf("Prime response: %v", res.Result)
 	}
+}
+
+// / Compute Average
+func doAverage(c pb.CalculatorClient) {
+	log.Printf("doAverage invoked")
+
+	reqs := []*pb.PrimeRequest{
+		{Number: 1},
+		{Number: 2},
+		{Number: 3},
+		{Number: 4},
+	}
+
+	stream, err := c.Average(context.Background())
+
+	if err != nil {
+		log.Fatalf("Failed to call Average: %v", err)
+	}
+
+	for _, req := range reqs {
+		log.Printf("Sending request: %v", req)
+
+		stream.Send(req)
+		time.Sleep(1 * time.Second)
+	}
+
+	res, err := stream.CloseAndRecv()
+
+	if err != nil {
+		log.Fatalf("Failed to receive response: %v", err)
+	}
+
+	log.Printf("Average response: %v", res.Average)
 }
