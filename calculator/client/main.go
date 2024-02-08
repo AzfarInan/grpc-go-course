@@ -24,4 +24,5 @@ func main() {
 	doSubtract(c)
 	doMultiply(c)
 	doDivide(c)
+	doPrime(c)
 }

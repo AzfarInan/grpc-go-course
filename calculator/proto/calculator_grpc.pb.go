@@ -26,6 +26,7 @@ type CalculatorClient interface {
 	Subtract(ctx context.Context, in *CalculatorRequest, opts ...grpc.CallOption) (*CalculatorResponse, error)
 	Multiply(ctx context.Context, in *CalculatorRequest, opts ...grpc.CallOption) (*CalculatorResponse, error)
 	Divide(ctx context.Context, in *CalculatorRequest, opts ...grpc.CallOption) (*CalculatorResponse, error)
+	Prime(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (Calculator_PrimeClient, error)
 }
 
 type calculatorClient struct {
@@ -72,6 +73,38 @@ func (c *calculatorClient) Divide(ctx context.Context, in *CalculatorRequest, op
 	return out, nil
 }
 
+func (c *calculatorClient) Prime(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (Calculator_PrimeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Calculator_ServiceDesc.Streams[0], "/calculator.Calculator/Prime", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &calculatorPrimeClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Calculator_PrimeClient interface {
+	Recv() (*CalculatorResponse, error)
+	grpc.ClientStream
+}
+
+type calculatorPrimeClient struct {
+	grpc.ClientStream
+}
+
+func (x *calculatorPrimeClient) Recv() (*CalculatorResponse, error) {
+	m := new(CalculatorResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CalculatorServer is the server API for Calculator service.
 // All implementations must embed UnimplementedCalculatorServer
 // for forward compatibility
@@ -80,6 +113,7 @@ type CalculatorServer interface {
 	Subtract(context.Context, *CalculatorRequest) (*CalculatorResponse, error)
 	Multiply(context.Context, *CalculatorRequest) (*CalculatorResponse, error)
 	Divide(context.Context, *CalculatorRequest) (*CalculatorResponse, error)
+	Prime(*PrimeRequest, Calculator_PrimeServer) error
 	mustEmbedUnimplementedCalculatorServer()
 }
 
@@ -98,6 +132,9 @@ func (UnimplementedCalculatorServer) Multiply(context.Context, *CalculatorReques
 }
 func (UnimplementedCalculatorServer) Divide(context.Context, *CalculatorRequest) (*CalculatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Divide not implemented")
+}
+func (UnimplementedCalculatorServer) Prime(*PrimeRequest, Calculator_PrimeServer) error {
+	return status.Errorf(codes.Unimplemented, "method Prime not implemented")
 }
 func (UnimplementedCalculatorServer) mustEmbedUnimplementedCalculatorServer() {}
 
@@ -184,6 +221,27 @@ func _Calculator_Divide_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Calculator_Prime_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PrimeRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(CalculatorServer).Prime(m, &calculatorPrimeServer{stream})
+}
+
+type Calculator_PrimeServer interface {
+	Send(*CalculatorResponse) error
+	grpc.ServerStream
+}
+
+type calculatorPrimeServer struct {
+	grpc.ServerStream
+}
+
+func (x *calculatorPrimeServer) Send(m *CalculatorResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Calculator_ServiceDesc is the grpc.ServiceDesc for Calculator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -208,6 +266,12 @@ var Calculator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Calculator_Divide_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Prime",
+			Handler:       _Calculator_Prime_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "calculator.proto",
 }

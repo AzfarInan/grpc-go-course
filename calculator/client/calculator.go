@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 
 	pb "github.com/AzfarInan/grpc-go-course/calculator/proto"
@@ -73,4 +74,34 @@ func doDivide(c pb.CalculatorClient) {
 	}
 
 	log.Printf("Result: %v", res.Result)
+}
+
+/// Prime Number Decomposition
+
+func doPrime(c pb.CalculatorClient) {
+	log.Println("doPrime invoked")
+
+	req := &pb.PrimeRequest{
+		Number: 120,
+	}
+
+	resStream, err := c.Prime(context.Background(), req)
+
+	if err != nil {
+		log.Fatalf("Failed to call Prime: %v", err)
+	}
+
+	for {
+		res, err := resStream.Recv()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Fatalf("Failed to receive response: %v", err)
+		}
+
+		log.Printf("Prime response: %v", res.Result)
+	}
 }

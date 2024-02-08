@@ -9,6 +9,10 @@ message CalculatorRequest {
   int32 b = 2;
 }
 
+message PrimeRequest {
+  int32 number = 1;
+}
+
 message CalculatorResponse {
   int32 result = 1;
 }
@@ -18,4 +22,5 @@ service Calculator {
   rpc Subtract(CalculatorRequest) returns (CalculatorResponse);
   rpc Multiply(CalculatorRequest) returns (CalculatorResponse);
   rpc Divide(CalculatorRequest) returns (CalculatorResponse);
+  rpc Prime(PrimeRequest) returns (stream CalculatorResponse);
 }

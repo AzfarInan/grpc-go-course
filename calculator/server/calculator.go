@@ -38,3 +38,26 @@ func (s *Server) Divide(ctx context.Context, req *pb.CalculatorRequest) (*pb.Cal
 		Result: req.GetA() / req.GetB(),
 	}, nil
 }
+
+/// Prime Number Decomposition
+
+func (s *Server) Prime(req *pb.PrimeRequest, stream pb.Calculator_PrimeServer) error {
+	log.Printf("Prime function was invoked with %v", req)
+
+	k := int32(2)
+	N := req.GetNumber()
+
+	for N > 1 {
+		if N%k == 0 {
+			res := &pb.CalculatorResponse{
+				Result: k,
+			}
+			stream.Send(res)
+			N = N / k
+		} else {
+			k = k + 1
+		}
+	}
+
+	return nil
+}
