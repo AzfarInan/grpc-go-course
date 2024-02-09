@@ -81,3 +81,53 @@ func doLongGreet(c pb.GreetServiceClient) {
 
 	log.Printf("LongGreet response: %v", res.Result)
 }
+
+func doGreetEveryone(c pb.GreetServiceClient) {
+	log.Println("doGreetEveryone invoked")
+
+	reqs := []*pb.GreetRequest{
+		{FirstName: "Tamanna"},
+		{FirstName: "Nusrat"},
+		{FirstName: "Sumaia"},
+	}
+
+	stream, err := c.GreetEveryone(context.Background())
+
+	if err != nil {
+		log.Fatalf("Failed to call GreetEveryone: %v", err)
+	}
+
+	waitc := make(chan struct{})
+
+	go func() {
+		for _, req := range reqs {
+			log.Println("Sending request:", req)
+
+			stream.Send(req)
+			time.Sleep(1 * time.Second)
+		}
+
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			res, err := stream.Recv()
+
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Fatalf("Failed to receive response: %v", err)
+				break
+			}
+
+			log.Printf("GreetEveryone response: %v", res.Result)
+		}
+
+		close(waitc)
+	}()
+
+	<-waitc
+}
