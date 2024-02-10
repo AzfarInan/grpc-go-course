@@ -139,3 +139,61 @@ func doAverage(c pb.CalculatorClient) {
 
 	log.Printf("Average response: %v", res.Average)
 }
+
+// / Find the maximum number
+func doMax(c pb.CalculatorClient) {
+	log.Printf("doMax invoked")
+
+	stream, err := c.Max(context.Background())
+
+	if err != nil {
+		log.Fatalf("Failed to call Max: %v", err)
+	}
+
+	reqs := []*pb.MaxRequest{
+		{Number: 1},
+		{Number: 5},
+		{Number: 11},
+		{Number: 6},
+		{Number: 19},
+		{Number: 14},
+		{Number: 20},
+	}
+
+	listOfNumbers := []int32{}
+	waitc := make(chan struct{})
+
+	go func() {
+		for _, req := range reqs {
+			log.Printf("Sending request: %v", req)
+
+			stream.Send(req)
+
+			/// Add number to list
+			listOfNumbers = append(listOfNumbers, req.GetNumber())
+
+			time.Sleep(1 * time.Second)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			res, err := stream.Recv()
+
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Fatalf("Failed to receive: %v", err)
+				break
+			}
+
+			log.Printf("Max number among %v: %v", listOfNumbers, res.Max)
+		}
+		close(waitc)
+	}()
+
+	<-waitc
+}

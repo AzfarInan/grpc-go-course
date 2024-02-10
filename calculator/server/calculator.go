@@ -88,3 +88,37 @@ func (s *Server) Average(stream pb.Calculator_AverageServer) error {
 		count++
 	}
 }
+
+/// Find Maximum
+
+func (s *Server) Max(stream pb.Calculator_MaxServer) error {
+	log.Printf("Max function was invoked with a streaming request")
+
+	maxNumber := int32(0)
+
+	for {
+		req, err := stream.Recv()
+
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			log.Fatalf("Failed to receive: %v", err)
+		}
+
+		res := req.GetNumber()
+
+		if res > maxNumber {
+			maxNumber = res
+		}
+
+		err = stream.Send(&pb.MaxResponse{
+			Max: maxNumber,
+		})
+
+		if err != nil {
+			log.Fatalf("Failed to send: %v", err)
+		}
+	}
+}

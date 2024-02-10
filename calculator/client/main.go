@@ -20,10 +20,11 @@ func main() {
 	defer conn.Close()
 
 	c := pb.NewCalculatorClient(conn)
-	doSum(c)
-	doSubtract(c)
-	doMultiply(c)
-	doDivide(c)
-	doPrime(c)
-	doAverage(c)
+	// doSum(c)
+	// doSubtract(c)
+	// doMultiply(c)
+	// doDivide(c)
+	// doPrime(c)
+	// doAverage(c)
+	doMax(c)
 }
