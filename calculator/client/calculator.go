@@ -7,6 +7,8 @@ import (
 	"time"
 
 	pb "github.com/AzfarInan/grpc-go-course/calculator/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func doSum(c pb.CalculatorClient) {
@@ -257,4 +259,33 @@ func doSecondMax(c pb.CalculatorClient) {
 	}()
 
 	<-waitc
+}
+
+// / Compute the square root
+func doSquareRoot(c pb.CalculatorClient, number int32) {
+	log.Printf("doSquareRoot invoked")
+
+	req := &pb.SqrtRequest{
+		Number: number,
+	}
+
+	res, err := c.Sqrt(context.Background(), req)
+
+	if err != nil {
+		e, ok := status.FromError(err)
+
+		if ok {
+			log.Printf("Error message from server: %v", e.Message())
+			log.Printf("Error code from server: %v", e.Code())
+
+			if e.Code() == codes.InvalidArgument {
+				log.Fatalf("We probably sent a negative number!")
+				return
+			}
+		} else {
+			log.Fatalf("Failed to call SquareRoot: %v", err)
+		}
+	}
+
+	log.Printf("SquareRoot response: %v", res)
 }

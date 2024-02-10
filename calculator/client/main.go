@@ -27,5 +27,8 @@ func main() {
 	// doPrime(c)
 	// doAverage(c)
 	// doMax(c)
-	doSecondMax(c)
+	// doSecondMax(c)
+	// doSquareRoot(c, 10)
+	doSquareRoot(c, -10)
+	// doSquareRoot(c, 144)
 }

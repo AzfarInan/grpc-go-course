@@ -2,10 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
+	"math"
 
 	pb "github.com/AzfarInan/grpc-go-course/calculator/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *Server) Add(ctx context.Context, req *pb.CalculatorRequest) (*pb.CalculatorResponse, error) {
@@ -161,4 +165,22 @@ func (s *Server) FindSecondMax(stream pb.Calculator_FindSecondMaxServer) error {
 			log.Fatalf("Failed to send: %v", err)
 		}
 	}
+}
+
+// Square Root
+func (s *Server) Sqrt(ctx context.Context, req *pb.SqrtRequest) (*pb.SqrtResponse, error) {
+	log.Printf("SquareRoot function was invoked with %v", req)
+
+	number := req.GetNumber()
+
+	if number < 0 {
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprintf("Received a negative number: %v", number),
+		)
+	}
+
+	return &pb.SqrtResponse{
+		Result: float32(math.Sqrt(float64(number))),
+	}, nil
 }
