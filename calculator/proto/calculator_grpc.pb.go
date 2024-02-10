@@ -29,6 +29,7 @@ type CalculatorClient interface {
 	Prime(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (Calculator_PrimeClient, error)
 	Average(ctx context.Context, opts ...grpc.CallOption) (Calculator_AverageClient, error)
 	Max(ctx context.Context, opts ...grpc.CallOption) (Calculator_MaxClient, error)
+	FindSecondMax(ctx context.Context, opts ...grpc.CallOption) (Calculator_FindSecondMaxClient, error)
 }
 
 type calculatorClient struct {
@@ -172,6 +173,37 @@ func (x *calculatorMaxClient) Recv() (*MaxResponse, error) {
 	return m, nil
 }
 
+func (c *calculatorClient) FindSecondMax(ctx context.Context, opts ...grpc.CallOption) (Calculator_FindSecondMaxClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Calculator_ServiceDesc.Streams[3], "/calculator.Calculator/FindSecondMax", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &calculatorFindSecondMaxClient{stream}
+	return x, nil
+}
+
+type Calculator_FindSecondMaxClient interface {
+	Send(*MaxRequest) error
+	Recv() (*MaxResponse, error)
+	grpc.ClientStream
+}
+
+type calculatorFindSecondMaxClient struct {
+	grpc.ClientStream
+}
+
+func (x *calculatorFindSecondMaxClient) Send(m *MaxRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *calculatorFindSecondMaxClient) Recv() (*MaxResponse, error) {
+	m := new(MaxResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CalculatorServer is the server API for Calculator service.
 // All implementations must embed UnimplementedCalculatorServer
 // for forward compatibility
@@ -183,6 +215,7 @@ type CalculatorServer interface {
 	Prime(*PrimeRequest, Calculator_PrimeServer) error
 	Average(Calculator_AverageServer) error
 	Max(Calculator_MaxServer) error
+	FindSecondMax(Calculator_FindSecondMaxServer) error
 	mustEmbedUnimplementedCalculatorServer()
 }
 
@@ -210,6 +243,9 @@ func (UnimplementedCalculatorServer) Average(Calculator_AverageServer) error {
 }
 func (UnimplementedCalculatorServer) Max(Calculator_MaxServer) error {
 	return status.Errorf(codes.Unimplemented, "method Max not implemented")
+}
+func (UnimplementedCalculatorServer) FindSecondMax(Calculator_FindSecondMaxServer) error {
+	return status.Errorf(codes.Unimplemented, "method FindSecondMax not implemented")
 }
 func (UnimplementedCalculatorServer) mustEmbedUnimplementedCalculatorServer() {}
 
@@ -369,6 +405,32 @@ func (x *calculatorMaxServer) Recv() (*MaxRequest, error) {
 	return m, nil
 }
 
+func _Calculator_FindSecondMax_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(CalculatorServer).FindSecondMax(&calculatorFindSecondMaxServer{stream})
+}
+
+type Calculator_FindSecondMaxServer interface {
+	Send(*MaxResponse) error
+	Recv() (*MaxRequest, error)
+	grpc.ServerStream
+}
+
+type calculatorFindSecondMaxServer struct {
+	grpc.ServerStream
+}
+
+func (x *calculatorFindSecondMaxServer) Send(m *MaxResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *calculatorFindSecondMaxServer) Recv() (*MaxRequest, error) {
+	m := new(MaxRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Calculator_ServiceDesc is the grpc.ServiceDesc for Calculator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -407,6 +469,12 @@ var Calculator_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Max",
 			Handler:       _Calculator_Max_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "FindSecondMax",
+			Handler:       _Calculator_FindSecondMax_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

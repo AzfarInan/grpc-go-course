@@ -197,3 +197,64 @@ func doMax(c pb.CalculatorClient) {
 
 	<-waitc
 }
+
+// Find the Second Most Max Number
+// / Find the maximum number
+func doSecondMax(c pb.CalculatorClient) {
+	log.Printf("doSecondMax invoked")
+
+	stream, err := c.FindSecondMax(context.Background())
+
+	if err != nil {
+		log.Fatalf("Failed to call FindSecondMax: %v", err)
+	}
+
+	reqs := []*pb.MaxRequest{
+		{Number: 20},
+		{Number: 1},
+		{Number: 3},
+		{Number: 5},
+		{Number: 11},
+		{Number: 18},
+		{Number: 8},
+		{Number: 14},
+		{Number: 4},
+	}
+
+	listOfNumbers := []int32{}
+	waitc := make(chan struct{})
+
+	go func() {
+		for _, req := range reqs {
+			log.Printf("Sending request: %v", req)
+
+			stream.Send(req)
+
+			/// Add number to list
+			listOfNumbers = append(listOfNumbers, req.GetNumber())
+
+			time.Sleep(1 * time.Second)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			res, err := stream.Recv()
+
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Fatalf("Failed to receive: %v", err)
+				break
+			}
+
+			log.Printf("Second Max number among %v: %v", listOfNumbers, res.Max)
+		}
+		close(waitc)
+	}()
+
+	<-waitc
+}

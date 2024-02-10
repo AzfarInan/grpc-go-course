@@ -26,5 +26,6 @@ func main() {
 	// doDivide(c)
 	// doPrime(c)
 	// doAverage(c)
-	doMax(c)
+	// doMax(c)
+	doSecondMax(c)
 }

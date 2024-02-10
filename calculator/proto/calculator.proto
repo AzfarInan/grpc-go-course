@@ -37,4 +37,5 @@ service Calculator {
   rpc Prime(PrimeRequest) returns (stream CalculatorResponse);
   rpc Average(stream PrimeRequest) returns (AverageResponse);
   rpc Max(stream MaxRequest) returns (stream MaxResponse);
+  rpc FindSecondMax(stream MaxRequest) returns (stream MaxResponse);
 }

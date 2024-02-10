@@ -122,3 +122,43 @@ func (s *Server) Max(stream pb.Calculator_MaxServer) error {
 		}
 	}
 }
+
+/// Find Second Maximum
+
+func (s *Server) FindSecondMax(stream pb.Calculator_FindSecondMaxServer) error {
+	log.Printf("FindSecondMax function was invoked with a streaming request")
+
+	maxNumber := int32(0)
+	secondMaxNumber := int32(0)
+
+	for {
+		req, err := stream.Recv()
+
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			log.Fatalf("Failed to receive: %v", err)
+		}
+
+		res := req.GetNumber()
+
+		if res > secondMaxNumber && res < maxNumber {
+			secondMaxNumber = res
+		}
+
+		if res > maxNumber {
+			secondMaxNumber = maxNumber
+			maxNumber = res
+		}
+
+		err = stream.Send(&pb.MaxResponse{
+			Max: secondMaxNumber,
+		})
+
+		if err != nil {
+			log.Fatalf("Failed to send: %v", err)
+		}
+	}
+}
