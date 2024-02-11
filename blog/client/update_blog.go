@@ -25,3 +25,16 @@ func updateBlog(c pb.BlogServiceClient, id string) {
 
 	log.Println("Blog has been updated")
 }
+
+// Delete Blog
+func deleteBlog(c pb.BlogServiceClient, id string) {
+	log.Println("--------Delete Blog--------")
+
+	_, err := c.DeleteBlog(context.Background(), &pb.BlogId{Id: id})
+
+	if err != nil {
+		log.Fatalf("Failed to delete blog: %v", err)
+	}
+
+	log.Println("Blog has been deleted")
+}
